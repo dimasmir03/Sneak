@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -9,10 +10,11 @@ namespace Курсовая
 
         int d = 2;
         static int len = 6;
-        Point[] sneak = new Point[len];
+        PointF[] sneak = new PointF[len];
         Point apple;
         int cell = 16;
-        int l = 16;
+        float l = 16;
+        float speed = 1.1f;
 
         public int W
         {
@@ -26,13 +28,13 @@ namespace Курсовая
             set { panel1.Height = value; }
         }
 
-        public int X
+        public float X
         {
             get { return sneak[0].X; }
             set { sneak[0].X = value; }
         }
 
-        public int Y
+        public float Y
         {
             get { return sneak[0].Y; }
             set { sneak[0].Y = value; }
@@ -42,7 +44,11 @@ namespace Курсовая
 
         public Form1()
         {
+            
             InitializeComponent();
+
+            W = W / cell * cell;
+            H = H/ cell * cell;
 
             map = new Bitmap(W, H);
             Graphics gm = Graphics.FromImage(map);
@@ -70,7 +76,7 @@ namespace Курсовая
             apple.X = new Random().Next(0, W / cell * cell) / cell * cell;
             apple.Y = new Random().Next(0, H / cell * cell) / cell * cell;
             Console.WriteLine("Apple: " + apple.X + " " + apple.Y);
-
+            //MessageBox.Show("Apple: " + apple.X + " " + apple.Y);
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -135,13 +141,15 @@ namespace Курсовая
                     break;
             }
 
-            //if (X == apple.X && Y == apple.Y) { eatApple(); }
+            
 
-            if (X < 0 || X > W || Y < 0 || Y > H)
+            if (X < 0 || X >= W || Y < 0 || Y >= H) 
             {
                 gameOver();
-                
+                return;
             }
+
+            if (X == apple.X && Y == apple.Y) { eatApple(); }
 
             for (int i = 0; i < sneak.Length; i++)
             {
@@ -156,19 +164,20 @@ namespace Курсовая
 
         public void gameOver()
         {
+            timer1.Stop();
+            timer1.Enabled = false;
             Console.WriteLine("123");
             MessageBox.Show("Game Over!");
-            timer1.Interval = 10000;
-            timer1.Stop();
         }
 
         public void eatApple()
         {
-            Console.WriteLine("Eat Fruit");
+            l *= speed;
             Array.Resize(ref sneak, sneak.Length + 1);
-            sneak[sneak.Length-1] = new Point(sneak[sneak.Length-2].X, sneak[sneak.Length-2].Y);
+            sneak[sneak.Length-1] = new PointF(sneak[sneak.Length-2].X, sneak[sneak.Length-2].Y);
             //Console.WriteLine("Length sneak: "+sneak.Length);
             createApple();
+            Console.WriteLine("Eat Fruit");
         }
 
         private void timer1_Tick(object sender, EventArgs e)
