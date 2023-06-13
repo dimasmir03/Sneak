@@ -8,75 +8,42 @@ namespace Курсовая
     public partial class Form1 : Form
     {
 
-        int d = 2;
+        int direction = 2;
         static int len = 6;
-        PointF[] sneak = new PointF[len];
+        List<Point> sneak = new List<Point>();
         Point apple;
         int cell = 16;
-        float l = 16;
-        float speed = 1.1f;
+        int speed = 20;
 
-        public int W
-        {
-            get { return panel1.Width; }
-            set { panel1.Width = value; }
-        }
+        public int W   { get => panel1.Width;   set { panel1.Width = value; } }
 
-        public int H
-        {
-            get { return panel1.Height; }
-            set { panel1.Height = value; }
-        }
+        public int H   { get => panel1.Height;  set { panel1.Height = value; } }
 
-        public float X
-        {
-            get { return sneak[0].X; }
-            set { sneak[0].X = value; }
-        }
+        public int X   { get => sneak[0].X;     set { sneak[0] = new Point(value, sneak[0].Y); } }
 
-        public float Y
-        {
-            get { return sneak[0].Y; }
-            set { sneak[0].Y = value; }
-        }
-
-        Bitmap map;
+        public int Y   { get => sneak[0].Y;     set { sneak[0] = new Point(sneak[0].X, value); } }
 
         public Form1()
         {
-            
             InitializeComponent();
 
             W = W / cell * cell;
-            H = H/ cell * cell;
-
-            map = new Bitmap(W, H);
-            Graphics gm = Graphics.FromImage(map);
+            H = H / cell * cell;
 
             createApple();
-            for (var i = 0; i < H / cell; i++)
-            {
-                for (var j = 0; j < W / cell; j++)
-                {
-                    gm.DrawRectangle(new Pen(Color.Red, 1), j * cell, i * cell, cell, cell);
-                }
-            }
 
             for (int i = 0; i < len; i++)
-            {
-                //sneak[i] = new Point();
-                //sneak[i].Y = i * cell;
-            }
+                sneak.Add(new Point(0, i * cell));
 
+            timer1.Interval = speed;
             timer1.Start();
         }
 
         public void createApple()
         {
-            apple.X = new Random().Next(0, W / cell * cell) / cell * cell;
-            apple.Y = new Random().Next(0, H / cell * cell) / cell * cell;
+            apple.X = new Random().Next(0, W) / cell * cell;
+            apple.Y = new Random().Next(0, H) / cell * cell;
             Console.WriteLine("Apple: " + apple.X + " " + apple.Y);
-            //MessageBox.Show("Apple: " + apple.X + " " + apple.Y);
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -85,65 +52,53 @@ namespace Курсовая
             {
                 case Keys.Up:
                 case Keys.W:
-                    if (d != 3) d = 1;
-                    //if ((Y -= cell) < 0) Y = H-cell;
-                    //Console.WriteLine("Key Up");
+                    if (direction != 3) direction = 1;
                     break;
                 case Keys.Down:
                 case Keys.S:
-                    if (d != 1) d = 3;
-                    //if ((Y += cell) >= H) Y = 0;
-                   // Console.WriteLine("Key Down");
+                    if (direction != 1) direction = 3;
                     break;
                 case Keys.Left:
                 case Keys.A:
-                    if (d != 2) d = 0;
-                    //if ((X -= cell) < 0) X = W-cell;
-                    //Console.WriteLine("Key Left");
+                    if (direction != 2) direction = 0;
                     break;
                 case Keys.Right:
                 case Keys.D:
-                    if (d != 0) d = 2;
-                    //if ((X += cell) >= W) X = 0;
-                   // Console.WriteLine("Key Right");
+                    if (direction != 0) direction = 2;
                     break;
             }
-            //Console.WriteLine(Y + " " + X);
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            //e.Graphics.DrawImage(map, e.ClipRectangle);
-
-
-            for (int i = sneak.Length - 2; i >= 0; i--)
+            for (var i = 0; i < H / cell; i++)
             {
-                sneak[i + 1].X = sneak[i].X;
-                sneak[i + 1].Y = sneak[i].Y;
+                for (var j = 0; j < W / cell; j++)
+                {
+                    e.Graphics.DrawRectangle(new Pen(Color.Red, 1), j * cell, i * cell, cell, cell);
+                }
             }
-            switch (d)
+
+            for (int i = sneak.Count - 2; i >= 0; i--)
+                sneak[i + 1] = new Point(sneak[i].X,sneak[i].Y);
+
+            switch (direction)
             {
                 case 0:
-                    //if ((X -= l) < 0) X = W - cell;
-                    X -= l;
+                    X -= cell;
                     break;
                 case 1:
-                    //if ((Y -= l) < 0) Y = H - cell;
-                    Y -= l;
+                    Y -= cell;
                     break;
                 case 2:
-                    //if ((X += l) >= W) X = 0;
-                    X += l;
+                    X += cell;
                     break;
                 case 3:
-                    //if ((Y += l) >= H) Y = 0;
-                    Y += l;
+                    Y += cell;
                     break;
             }
 
-            
-
-            if (X < 0 || X >= W || Y < 0 || Y >= H) 
+            if (X < 0 || X >= W || Y < 0 || Y >= H)
             {
                 gameOver();
                 return;
@@ -151,14 +106,9 @@ namespace Курсовая
 
             if (X == apple.X && Y == apple.Y) { eatApple(); }
 
-            for (int i = 0; i < sneak.Length; i++)
-            {
-                /*for (int j = 0; j < W; j+=cell)
-                {
-                    e.Graphics.FillEllipse(Brushes.Green, j, i, cell, cell);
-                }*/
+            for (int i = 0; i < sneak.Count; i++)
                 e.Graphics.FillEllipse(Brushes.Green, sneak[i].X, sneak[i].Y, cell, cell);
-            }
+
             e.Graphics.FillEllipse(Brushes.Orange, apple.X, apple.Y, cell, cell);
         }
 
@@ -166,16 +116,12 @@ namespace Курсовая
         {
             timer1.Stop();
             timer1.Enabled = false;
-            Console.WriteLine("123");
             MessageBox.Show("Game Over!");
         }
 
         public void eatApple()
         {
-            l *= speed;
-            Array.Resize(ref sneak, sneak.Length + 1);
-            sneak[sneak.Length-1] = new PointF(sneak[sneak.Length-2].X, sneak[sneak.Length-2].Y);
-            //Console.WriteLine("Length sneak: "+sneak.Length);
+            sneak.Add(new Point(sneak[sneak.Count - 1].X, sneak[sneak.Count - 1].Y));
             createApple();
             Console.WriteLine("Eat Fruit");
         }
